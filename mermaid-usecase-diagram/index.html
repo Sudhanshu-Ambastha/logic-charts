@@ -1,9 +1,135 @@
 <!DOCTYPE html>
 <html>
 
+<head>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-panel: #1e293b;
+            --accent: #38bdf8;
+            --text-light: #e2e8f0;
+            --text-dark: #000;
+            --border: #334155;
+        }
+    
+        body {
+            display: flex;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+        }
+    
+        #editor {
+            width: 300px;
+            min-width: 300px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border);
+            background-color: var(--bg-dark);
+            box-sizing: border-box;
+        }
+    
+        h3 {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+    
+        textarea {
+            flex: 1;
+            width: 100%;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-light);
+            padding: 12px;
+            font-family: 'Fira Code', monospace;
+            font-size: 13px;
+            resize: none;
+            outline: none;
+            box-sizing: border-box;
+        }
+    
+        textarea:focus {
+            border-color: var(--accent);
+        }
+    
+        .controls {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+    
+        button {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            background: var(--bg-panel);
+            color: var(--text-light);
+            cursor: pointer;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+    
+        button:hover {
+            background: var(--accent);
+            color: var(--bg-dark);
+            border-color: var(--accent);
+        }
+    
+        #viewer {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #020617;
+            overflow: auto;
+            padding: 20px;
+        }
+    
+        svg {
+            background: #ffffff;
+            border-radius: 8px;
+            display: block;
+        }
+    </style>
+
+</head>
+
 <body>
-    <div id="diagram"></div>
+
+    <div id="editor">
+
+        <h3>Code</h3>
+
+        <textarea id="codeInput">
+useCase
+actor "Customer" as C; "Office personnel" as OP
+
+system "ACME System" {
+usecase "Submit Storage Request" as UC1;
+"Register Incoming Items" as UC2
+}
+
+C --> UC1
+OP --> UC1
+UC1 ..> UC2 : <<include>>
+        </textarea>
+
+        <div class="controls">
+            <button onclick="downloadSVG()">Download SVG</button>
+            <button onclick="downloadPNG()">Download PNG</button>
+        </div>
+    </div>
+    <div id="viewer">
+        <div id="diagram"></div>
+    </div>
     <script type="module" src="/main.js"></script>
 </body>
-
 </html>
