@@ -1,29 +1,46 @@
 export function layoutDiagram(model) {
+  const ucIds = Object.keys(model.usecases);
+  const actors = Object.keys(model.actors);
+  const exts = Object.keys(model.externalSystems);
+
+  // Reduced total width and offset to pull everything closer to the center
+  const width = 800; 
+  const centerX = width / 2;
+  const sideOffset = 220; 
+  const actorX = centerX - sideOffset;
+  const extX = centerX + sideOffset;
+
+  const systemTop = 80;
+  const headerHeight = 70;
+  const spacing = 70; 
+  const startY = systemTop + headerHeight;
 
   const positions = {};
 
-  const actorSpacing = 150;
-  const usecaseSpacing = 120;
-
-  let startY = 150;
-
-  /* actors */
-
-  Object.keys(model.actors).forEach((actor, i) => {
-    positions[actor] = {
-      x: 120,
-      y: startY + i * actorSpacing
-    };
+  ucIds.forEach((id, i) => {
+    positions[id] = { x: centerX, y: startY + (i * spacing) };
   });
 
-  /* usecases inside system */
+  const placeEntities = (entities, xPos) => {
+    entities.forEach((id, index) => {
+      const connections = model.connections.filter(c => c.from === id || c.to === id);
+      const connectedY = connections
+        .map(c => positions[c.from === id ? c.to : c.from]?.y)
+        .filter(y => y !== undefined);
 
-  Object.keys(model.usecases).forEach((uc, i) => {
-    positions[uc] = {
-      x: 450,
-      y: startY + i * usecaseSpacing
-    };
-  });
+      let y = connectedY.length > 0 
+        ? connectedY.reduce((a, b) => a + b, 0) / connectedY.length 
+        : startY + index * spacing;
+        
+      positions[id] = { x: xPos, y };
+    });
+  };
 
-  return positions;
+  placeEntities(actors, actorX);
+  placeEntities(exts, extX);
+
+  const systemHeight = (ucIds.length * spacing) + headerHeight;
+  const height = Math.max(systemTop + systemHeight + 60, 600);
+
+  return { positions, width, height, systemHeight, systemTop, boundaryWidth: 280 };
 }

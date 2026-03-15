@@ -9,7 +9,6 @@ export function parseUseCaseDiagram(code) {
     const line = raw.trim();
     if (!line || line === "useCase" || line === "usecaseDiagram") continue;
 
-    // system
     if (line.startsWith("system")) {
       const match = line.match(/system\s+"(.+?)"/);
       if (match) model.setSystem(match[1]);
@@ -21,7 +20,6 @@ export function parseUseCaseDiagram(code) {
       continue;
     }
 
-    // actors
     if (line.startsWith("actor")) {
       mode = "actor";
       const parts = line.replace(/^actor/, "").split(";");
@@ -37,7 +35,6 @@ export function parseUseCaseDiagram(code) {
       continue;
     }
 
-    // usecases
     if (line.startsWith("usecase")) {
       mode = "usecase";
       const parts = line.replace(/^usecase/, "").split(";");
@@ -52,8 +49,7 @@ export function parseUseCaseDiagram(code) {
       }
       continue;
     }
-
-    // multiline usecases
+    
     if (mode === "usecase") {
       const parts = line.split(";");
       for (const part of parts) {
@@ -68,7 +64,15 @@ export function parseUseCaseDiagram(code) {
       continue;
     }
 
-    // include
+    if (line.startsWith("external")) {
+      const parts = line.replace(/^external/, "").split(";");
+      parts.forEach(part => {
+        const match = part.trim().match(/"(.+?)"\s+as\s+(\w+)/);
+        if (match) model.addExternalSystem(match[2], match[1]);
+      });
+      continue;
+    }
+
     if (line.includes("..>")) {
       const [from, rest] = line.split("..>");
       const right = rest.split(":");
@@ -79,10 +83,16 @@ export function parseUseCaseDiagram(code) {
       continue;
     }
 
-    // association
     if (line.includes("-->")) {
-      const [from, to] = line.split("-->");
-      model.addConnection(from.trim(), "association", to.trim());
+      const [from, targets] = line.split("-->");
+      const targetList = targets.split(";");
+      
+      targetList.forEach(to => {
+        const cleanTo = to.trim();
+        if (cleanTo) {
+          model.addConnection(from.trim(), "association", cleanTo);
+        }
+      });
       continue;
     }
   }

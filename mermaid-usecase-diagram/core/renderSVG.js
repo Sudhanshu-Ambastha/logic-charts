@@ -1,55 +1,59 @@
 import { templates } from "../templates/svgTemplates.js";
 
-export function renderSVG(model, positions) {
-  let content = "";
-  if (model.system) content += templates.systemBoundary(300, 80, 400, 350, model.system);
+export function renderSVG(model, layoutData) {
+  const { positions, width, height, systemHeight, systemTop, boundaryWidth } = layoutData;
+  const centerX = width / 2;
+  const boundaryX = centerX - (boundaryWidth / 2);
+  const boundaryY = systemTop;
 
-  Object.keys(model.usecases).forEach(uc => {
-    const p = positions[uc];
-    if (p) content += templates.useCase(p.x, p.y, model.usecases[uc]);
-  });
+  let boundary = "";
+  let connectors = "";
+  let nodes = "";
 
-  Object.keys(model.actors).forEach(actor => {
-    const p = positions[actor];
-    if (p) content += templates.actor(p.x, p.y, model.actors[actor]);
-  });
+  if (model.system) {
+    boundary += templates.systemBoundary(boundaryX, boundaryY, boundaryWidth, systemHeight, model.system);
+  }
 
-  model.connections.forEach(conn => {
+  const entityConnectionCount = {};
+
+  model.connections.forEach((conn) => {
     const p1 = positions[conn.from];
     const p2 = positions[conn.to];
     if (!p1 || !p2) return;
 
-    const dx = p2.x - p1.x;
-    const dy = p2.y - p1.y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-
-    const rx = 80;
-    const ry = 35;
+    const lineOffset = 0; 
     
-    const startX = p1.x + (dx / dist) * rx;
-    const startY = p1.y + (dy / dist) * ry;
-    const endX = p2.x - (dx / dist) * rx;
-    const endY = p2.y - (dy / dist) * ry;
+    const isLeftToRight = p1.x < p2.x;
+    
+    const startX = p1.x + (isLeftToRight ? 40 : -40);
+    const startY = p1.y + lineOffset;
+    
+    const endX = p2.x + (isLeftToRight ? -70 : 70);
+    const endY = p2.y;
 
-    content += templates.connector(startX, startY, endX, endY, conn.type);
+    connectors += templates.connector(startX, startY, endX, endY, conn.type);
   });
 
-  Object.keys(model.usecases).forEach(uc => {
-    const p = positions[uc];
-    if (p) content += templates.useCase(p.x, p.y, model.usecases[uc]);
-  });
+  const renderCollection = (collection, type) => {
+    Object.keys(collection).forEach(id => {
+      const p = positions[id];
+      if (!p) return;
+      if (type === "usecase") nodes += templates.useCase(p.x, p.y, collection[id]);
+      else if (type === "external") nodes += templates.externalSystem(p.x, p.y, collection[id]);
+      else if (type === "actor") nodes += templates.actor(p.x, p.y, collection[id]);
+    });
+  };
 
-  Object.keys(model.actors).forEach(actor => {
-    const p = positions[actor];
-    if (p) content += templates.actor(p.x, p.y, model.actors[actor]);
-  });
+  renderCollection(model.usecases, "usecase");
+  renderCollection(model.externalSystems, "external");
+  renderCollection(model.actors, "actor");
 
-  return `<svg width="900" height="600" xmlns="http://www.w3.org/2000/svg">
+  return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
     <defs>
-      <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" fill="black">
         <polygon points="0 0, 10 3.5, 0 7"/>
       </marker>
     </defs>
-    ${content}
+    ${boundary} ${connectors} ${nodes}
   </svg>`;
 }

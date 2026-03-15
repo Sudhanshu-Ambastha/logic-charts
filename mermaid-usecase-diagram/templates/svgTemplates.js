@@ -15,11 +15,10 @@ export const templates = {
   },
 
   useCase(x, y, label) {
-    const width = 120;
     return `
     <g class="usecase">
-      <ellipse cx="${x}" cy="${y}" rx="${width / 2 + 20}" ry="35" fill="#61c1ed" stroke="black" stroke-width="1"/>
-      <text x="${x}" y="${y + 5}" text-anchor="middle" font-size="12" font-family="Helvetica" font-weight="bold" fill="black" style="pointer-events:none;">
+      <ellipse cx="${x}" cy="${y}" rx="70" ry="25" fill="#61c1ed" stroke="black" stroke-width="1"/>
+      <text x="${x}" y="${y + 5}" text-anchor="middle" font-size="11" font-family="Helvetica" font-weight="bold" fill="black">
         ${label}
       </text>
     </g>
@@ -29,8 +28,8 @@ export const templates = {
   systemBoundary(x, y, width, height, label) {
     return `
     <g class="system-boundary">
-      <rect x="${x}" y="${y}" width="${width}" height="${height}" fill="#61c1ed" stroke="#000"/>
-      <text x="${x + width / 2}" y="${y + 25}" text-anchor="middle" font-size="16" font-family="Helvetica" font-weight="bold">${label}</text>
+      <rect x="${x}" y="${y}" width="${width}" height="${height}" fill="#61c1ed" stroke="#000" stroke-width="2"/>
+      <text x="${x + width / 2}" y="${y + 30}" text-anchor="middle" font-size="18" font-family="Helvetica" font-weight="bold">${label}</text>
     </g>
     `;
   },
@@ -67,25 +66,14 @@ export const templates = {
   },
 
   connector(x1, y1, x2, y2, type) {
-    const midX = (x1 + x2) / 2;
-    const midY = (y1 + y2) / 2;
-    
-    const dx = x2 - x1;
-    const dy = y2 - y1;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    const offset = 25;
-    
-    const labelX = midX - (dy / dist) * offset;
-    const labelY = midY + (dx / dist) * offset;
-
-    const label = type ? `&laquo;${type}&raquo;` : "";
-    const dashed = (type === "include" || type === "extend") ? 'stroke-dasharray="5,5"' : "";
-
-    return `
-      <g class="connector">
-        <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="black" stroke-width="2" ${dashed} marker-end="url(#arrowhead)"/>
-        ${label ? `<text x="${labelX}" y="${labelY}" text-anchor="middle" font-size="12" font-weight="bold" fill="black">${label}</text>` : ""}
-      </g>
+    const horizontalGap = 60;
+    const elbowX = x1 < x2 ? x2 - horizontalGap : x2 + horizontalGap;
+    const d = `M ${x1} ${y1} L ${elbowX} ${y1} L ${elbowX} ${y2} L ${x2} ${y2}`;
+    const dashed = (type === "include" || type === "extend") ? 'stroke-dasharray="4,4"' : "";
+    return `    
+    <g class="connector">
+      <path d="${d}" stroke="black" stroke-width="1.5" fill="none" ${dashed} marker-end="url(#arrowhead)"/>
+    </g>
     `;
   }
 };
