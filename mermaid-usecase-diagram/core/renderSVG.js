@@ -25,7 +25,7 @@ export function renderSVG(model, layoutData) {
     
     const isLeftToRight = p1.x < p2.x;
     
-    const startX = p1.x + (isLeftToRight ? 40 : -40);
+    const startX = p1.x + (isLeftToRight ? 40 : 20 );
     const startY = p1.y + lineOffset;
     
     const endX = p2.x + (isLeftToRight ? -70 : 70);
