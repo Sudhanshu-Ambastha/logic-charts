@@ -38,8 +38,9 @@ export function parseUseCaseDiagram(code) {
       continue;
     }
     
-    if (line.match(/^(include|extend|generalization):/i)) {
-      const typeMatch = line.match(/^(include|extend|generalization):/i);
+    const relRegex = /^(include|extend|generalization|dependency|realization|anchor|constraint|containment):/i;
+    if (line.match(relRegex)) {
+      const typeMatch = line.match(relRegex);
       const type = typeMatch[1].toLowerCase();
       const content = line.split(":")[1];
       

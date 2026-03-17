@@ -18,7 +18,7 @@ export function renderSVG(model, layoutData) {
     const p1 = positions[conn.from];
     const p2 = positions[conn.to];
     if (!p1 || !p2) return;
-    connectors += templates.connector(p1.x, p1.y, p2.x, p2.y, conn.type);
+    connectors += templates.connector(p1.x, p1.y, p2.x, p2.y, conn.type, conn.from, conn.to, model);
   });
 
   const renderCollection = (collection, type) => {
@@ -47,6 +47,10 @@ export function renderSVG(model, layoutData) {
 
       <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" fill="black">
         <polygon points="0 0, 10 3.5, 0 7"/>
+      </marker>
+
+      <marker id="arrow-diamond" markerWidth="12" markerHeight="12" refX="12" refY="6" orient="auto">
+        <path d="M 0 6 L 6 0 L 12 6 L 6 12 Z" fill="white" stroke="black" stroke-width="1"/>
       </marker>
     </defs>
     ${boundary} ${connectors} ${nodes}

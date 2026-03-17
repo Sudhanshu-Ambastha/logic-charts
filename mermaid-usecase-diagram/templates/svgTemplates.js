@@ -65,18 +65,40 @@ export const templates = {
     `;
   },
 
-  connector(x1, y1, x2, y2, type) {
+  connector(x1, y1, x2, y2, type, fromId, toId, model) {
     const isRel = type === "include" || type === "extend";
-    const isGen = type === "generalization";
+    const isDashed = isRel || type === "dependency" || type === "realization" || type === "anchor";
+    const isDotted = type === "constraint";
     
+    if (type === "anchor") {
+      const isFromValid = model.notes[fromId] || model.externalSystems?.[fromId];
+      const isToValid = model.notes[toId] || model.externalSystems?.[toId];
+      if (!isFromValid && !isToValid) {
+         console.error("Anchor connection only allowed between System/External System and Notes");
+         return ""; 
+      }
+    }
+
+    if (type === "containment") {
+      const isSystem = model.systemBoundary?.id === fromId;
+      const isToOvalOrNote = model.usecases[toId] || model.notes[toId];
+      if (!isSystem || !isToOvalOrNote) {
+        console.error("Containment only allowed from System Boundary to UseCase or Note");
+        return "";
+      }
+    }
+
     let markerId = "none"; 
     if (isRel || type === "dependency") markerId = "arrow-open";
-    if (isGen) markerId = "arrow-hollow";
+    if (type === "generalization" || type === "realization") markerId = "arrow-hollow";
+    if (type === "containment") markerId = "arrow-diamond";
 
     let d;
     let labelX, labelY;
 
-    if (isRel) {
+    const needsCurve = isRel || ["dependency", "realization", "generalization", "containment", "constraint"].includes(type);
+
+    if (needsCurve) {
         const startX = x1 + 70;
         const endX = x2 + 70;
         const ctrlX = Math.max(startX, endX) + 60;
@@ -87,7 +109,6 @@ export const templates = {
     } else {
         let startX = x1;
         let endX = x2;
-
         if (x1 < x2) {
             startX = x1; 
             endX = x2 - 70; 
@@ -95,16 +116,18 @@ export const templates = {
             startX = x1; 
             endX = x2 + 70;
         }
-        
         d = `M ${startX} ${y1} L ${endX} ${y2}`;
     }
 
-    const dashed = (isRel || type === "dependency") ? 'stroke-dasharray="5,5"' : "";
+    let strokeDash = "";
+    if (isDashed) strokeDash = 'stroke-dasharray="5,5"';
+    if (isDotted) strokeDash = 'stroke-dasharray="2,2"';
+    const showLabel = isRel; 
 
     return `
-      <g class="connector">
-        <path d="${d}" stroke="black" stroke-width="1.2" fill="none" ${dashed} marker-end="url(#${markerId})"/>
-        ${isRel ? `
+      <g class="connector" data-type="${type}">
+        <path d="${d}" stroke="black" stroke-width="1.2" fill="none" ${strokeDash} marker-end="url(#${markerId})"/>
+        ${showLabel ? `
           <text x="${labelX}" y="${labelY}" text-anchor="start" font-size="10" font-family="Helvetica" font-style="italic" fill="#000" font-weight="bold">
             «${type}»
           </text>` : ""
