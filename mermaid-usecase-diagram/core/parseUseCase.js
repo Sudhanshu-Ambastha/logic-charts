@@ -7,7 +7,7 @@ export function parseUseCaseDiagram(code) {
 
   for (const raw of lines) {
     const line = raw.trim();
-    if (!line || line === "useCase" || line === "usecaseDiagram") continue;
+    if (!line || line === "useCase" || line === "usecaseDiagram" || line.startsWith("#")) continue;
 
     if (line.startsWith("system")) {
       const match = line.match(/system\s+"(.+?)"/);
@@ -22,81 +22,92 @@ export function parseUseCaseDiagram(code) {
 
     if (line.startsWith("actor")) {
       mode = "actor";
-      const parts = line.replace(/^actor/, "").split(";");
-      for (const part of parts) {
-        const p = part.trim();
-        if (!p) continue;
-        const match = p.match(/"(.+?)"\s+as\s+(\w+)/);
-        if (match) {
-          const [, label, alias] = match;
-          model.addActor(alias, label);
-        }
-      }
+      processDefinitions(line.replace(/^actor/, ""), model, "actor");
       continue;
     }
 
     if (line.startsWith("usecase")) {
       mode = "usecase";
-      const parts = line.replace(/^usecase/, "").split(";");
-      for (const part of parts) {
-        const p = part.trim();
-        if (!p) continue;
-        const match = p.match(/"(.+?)"\s+as\s+(\w+)/);
-        if (match) {
-          const [, label, alias] = match;
-          model.addUseCase(alias, label);
-        }
-      }
-      continue;
-    }
-    
-    if (mode === "usecase") {
-      const parts = line.split(";");
-      for (const part of parts) {
-        const p = part.trim();
-        if (!p) continue;
-        const match = p.match(/"(.+?)"\s+as\s+(\w+)/);
-        if (match) {
-          const [, label, alias] = match;
-          model.addUseCase(alias, label);
-        }
-      }
+      processDefinitions(line.replace(/^usecase/, ""), model, "usecase");
       continue;
     }
 
     if (line.startsWith("external")) {
-      const parts = line.replace(/^external/, "").split(";");
-      parts.forEach(part => {
-        const match = part.trim().match(/"(.+?)"\s+as\s+(\w+)/);
-        if (match) model.addExternalSystem(match[2], match[1]);
+      mode = "external";
+      processDefinitions(line.replace(/^external/, ""), model, "external");
+      continue;
+    }
+    
+    if (line.match(/^(include|extend|generalization):/i)) {
+      const typeMatch = line.match(/^(include|extend|generalization):/i);
+      const type = typeMatch[1].toLowerCase();
+      const content = line.split(":")[1];
+      
+      content.split(";").forEach(pair => {
+        if (pair.includes("-->")) {
+          const [from, to] = pair.split("-->").map(s => s.trim());
+          if (from && to) model.addConnection(from, type, to);
+        }
       });
       continue;
     }
 
     if (line.includes("..>")) {
-      const [from, rest] = line.split("..>");
-      const right = rest.split(":");
-      const to = right[0].trim();
-      let type = "include";
-      if (right[1]) type = right[1].replace(/<<|>>/g, "").trim();
-      model.addConnection(from.trim(), type, to);
+      const parts = line.split("..>");
+      const from = parts[0].trim();
+      const rest = parts[1].trim();
+      let to, type = "include";
+
+      if (rest.includes(":")) {
+        const subParts = rest.split(":");
+        to = subParts[0].trim();
+        const label = subParts[1].toLowerCase();
+        if (label.includes("extend")) type = "extend";
+      } else {
+        const subParts = rest.split(/\s+/);
+        to = subParts[0].trim();
+        if (subParts[1] && subParts[1].toLowerCase().includes("extend")) type = "extend";
+      }
+      model.addConnection(from, type, to);
       continue;
     }
 
     if (line.includes("-->")) {
       const [from, targets] = line.split("-->");
-      const targetList = targets.split(";");
-      
-      targetList.forEach(to => {
+      targets.split(";").forEach(to => {
         const cleanTo = to.trim();
-        if (cleanTo) {
-          model.addConnection(from.trim(), "association", cleanTo);
-        }
+        if (cleanTo) model.addConnection(from.trim(), "association", cleanTo);
       });
       continue;
+    }
+
+    if (mode === "usecase" || mode === "actor" || mode === "external") {
+      processDefinitions(line, model, mode);
     }
   }
 
   model.inferUseCases();
   return model;
+}
+
+function processDefinitions(content, model, type) {
+  content.split(";").forEach(part => {
+    const p = part.trim();
+    if (!p || p.includes("-->") || p.includes("..>")) return;
+
+    const match = p.match(/"(.+?)"\s+as\s+(\w+)/);
+    if (match) {
+      const [, label, alias] = match;
+      if (type === "actor") model.addActor(alias, label);
+      else if (type === "external") model.addExternalSystem(alias, label);
+      else model.addUseCase(alias, label);
+    } else {
+      const alias = p.split(/\s+/)[0];
+      if (alias) {
+        if (type === "actor") model.addActor(alias, alias);
+        else if (type === "external") model.addExternalSystem(alias, alias); 
+        else model.addUseCase(alias, alias);
+      }
+    }
+  });
 }

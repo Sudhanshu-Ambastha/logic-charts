@@ -66,14 +66,50 @@ export const templates = {
   },
 
   connector(x1, y1, x2, y2, type) {
-    const horizontalGap = 60;
-    const elbowX = x1 < x2 ? x2 - horizontalGap : x2 + horizontalGap;
-    const d = `M ${x1} ${y1} L ${elbowX} ${y1} L ${elbowX} ${y2} L ${x2} ${y2}`;
-    const dashed = (type === "include" || type === "extend") ? 'stroke-dasharray="4,4"' : "";
-    return `    
-    <g class="connector">
-      <path d="${d}" stroke="black" stroke-width="1.5" fill="none" ${dashed} marker-end="url(#arrowhead)"/>
-    </g>
+    const isRel = type === "include" || type === "extend";
+    const isGen = type === "generalization";
+    
+    let markerId = "none"; 
+    if (isRel || type === "dependency") markerId = "arrow-open";
+    if (isGen) markerId = "arrow-hollow";
+
+    let d;
+    let labelX, labelY;
+
+    if (isRel) {
+        const startX = x1 + 70;
+        const endX = x2 + 70;
+        const ctrlX = Math.max(startX, endX) + 60;
+        const ctrlY = (y1 + y2) / 2;
+        d = `M ${startX} ${y1} Q ${ctrlX} ${ctrlY} ${endX} ${y2}`;
+        labelX = Math.max(startX, endX) + 40;
+        labelY = (y1 + y2) / 2;
+    } else {
+        let startX = x1;
+        let endX = x2;
+
+        if (x1 < x2) {
+            startX = x1; 
+            endX = x2 - 70; 
+        } else {
+            startX = x1; 
+            endX = x2 + 70;
+        }
+        
+        d = `M ${startX} ${y1} L ${endX} ${y2}`;
+    }
+
+    const dashed = (isRel || type === "dependency") ? 'stroke-dasharray="5,5"' : "";
+
+    return `
+      <g class="connector">
+        <path d="${d}" stroke="black" stroke-width="1.2" fill="none" ${dashed} marker-end="url(#${markerId})"/>
+        ${isRel ? `
+          <text x="${labelX}" y="${labelY}" text-anchor="start" font-size="10" font-family="Helvetica" font-style="italic" fill="#000" font-weight="bold">
+            «${type}»
+          </text>` : ""
+        }
+      </g>
     `;
-  }
+  },
 };

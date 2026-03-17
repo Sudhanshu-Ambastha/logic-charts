@@ -14,24 +14,11 @@ export function renderSVG(model, layoutData) {
     boundary += templates.systemBoundary(boundaryX, boundaryY, boundaryWidth, systemHeight, model.system);
   }
 
-  const entityConnectionCount = {};
-
   model.connections.forEach((conn) => {
     const p1 = positions[conn.from];
     const p2 = positions[conn.to];
     if (!p1 || !p2) return;
-
-    const lineOffset = 0; 
-    
-    const isLeftToRight = p1.x < p2.x;
-    
-    const startX = p1.x + (isLeftToRight ? 40 : 20 );
-    const startY = p1.y + lineOffset;
-    
-    const endX = p2.x + (isLeftToRight ? -70 : 70);
-    const endY = p2.y;
-
-    connectors += templates.connector(startX, startY, endX, endY, conn.type);
+    connectors += templates.connector(p1.x, p1.y, p2.x, p2.y, conn.type);
   });
 
   const renderCollection = (collection, type) => {
@@ -50,6 +37,14 @@ export function renderSVG(model, layoutData) {
 
   return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
     <defs>
+      <marker id="arrow-open" markerWidth="10" markerHeight="10" refX="10" refY="5" orient="auto">
+        <path d="M 0 0 L 10 5 L 0 10" fill="none" stroke="black" stroke-width="1.2"/>
+      </marker>
+      
+      <marker id="arrow-hollow" markerWidth="10" markerHeight="10" refX="10" refY="5" orient="auto">
+        <path d="M 10 5 L 0 0 L 0 10 Z" fill="white" stroke="black" stroke-width="1"/>
+      </marker>
+
       <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" fill="black">
         <polygon points="0 0, 10 3.5, 0 7"/>
       </marker>
