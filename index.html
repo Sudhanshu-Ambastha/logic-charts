@@ -205,7 +205,7 @@
             border-radius: 10px;
         }
     </style>
-  <script type="module" crossorigin src="/usecase/assets/index-Cxkr5uOj.js"></script>
+  <script type="module" crossorigin src="/logic-charts/assets/index-DnRqyQyu.js"></script>
 </head>
 
 <body>
@@ -215,37 +215,10 @@
         <h3>Code</h3>
 
         <textarea id="codeInput">
-useCase
-actor "Customer" as C; "Office personnel" as OP; "Foreman" as F; "Warehouse Worker" as WW; "ForkLift Operator" as FO; "Truck Driver" as TD;
-
-external "Barcode Reader System" as BRS; "Radio Communication System" as RCS;
-
-system "ACME System" {
-usecase "Submit Storage Request" as UC;
-"Request distribution" as UC2;
-"Track Item Status" as UC3;
-"Create Redistribution order" as UC4;
-"Register Customer" as UC5;
-"Assign Task" as UC6;
-"Monitor Operations" as UC7;
-"Register Incoming Items" as UC8;
-"Scan Items" as UC9;
-"Move Items" as UC10;
-"Transport Items" as UC11;
-"Confirm Delivery" as UC12;
-}
-
-C --> UC; UC2; UC3;
-OP --> UC4; UC5;
-F --> UC6; UC7;
-WW --> UC8; UC9;
-FO --> UC10;
-TD --> UC11; UC12;
-BRS --> UC9;
-RCS --> UC11;
-
-include: UC4-->UC6; UC6-->UC10; UC8-->UC9;UC9-->UC10;UC11-->UC12;
-extend: UC5-->UC; UC2-->UC3
+cpm
+activity: A, B, C, D, E, F, G
+predecessor: _, _, A, A;B, D, C;E, E
+duration: 7, 9, 12, 8, 9, 6, 5
         </textarea>
 
         <div class="controls">
