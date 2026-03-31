@@ -17,18 +17,18 @@ jobs:
         with:
           node-version: 20
           cache: "npm"
-          cache-dependency-path: "mermaid-usecase-diagram/package-lock.json"
+          cache-dependency-path: "diagram/package-lock.json"
 
       - name: Install dependencies
         run: npm install
-        working-directory: mermaid-usecase-diagram
+        working-directory: diagram
 
       - name: Build
         run: npm run build
-        working-directory: mermaid-usecase-diagram
+        working-directory: diagram
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./mermaid-usecase-diagram/dist
+          publish_dir: ./diagram/dist

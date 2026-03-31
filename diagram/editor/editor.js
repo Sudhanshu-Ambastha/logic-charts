@@ -11,24 +11,36 @@ export function initEditor() {
 
   async function render() {
     const code = input.value.trim();
-    if (!code.startsWith('useCase')) {
-      container.innerHTML = "<div style='color: #666; font-family: sans-serif; padding: 20px;'>Waiting for valid input (Start with 'useCase')...</div>";
+    const isUseCase = code.startsWith("useCase") || code.startsWith("usecase");
+    const isCPM = code.startsWith("cpm");
+
+    if (!isUseCase && !isCPM) {
+      container.innerHTML = `
+        <div style='color: #8b949e; font-family: "Plus Jakarta Sans", sans-serif; padding: 40px; text-align: center;'>
+          <p style='font-weight: 800; font-size: 1.2rem; margin-bottom: 8px;'>🏗️ Sovereign Architect Editor</p>
+          <p style='font-size: 0.9em; opacity: 0.7;'>Waiting for valid input (Start with <code>useCase</code> or <code>cpm</code>)...</p>
+        </div>`;
       return;
     }
 
     try {
       const svg = await renderDiagram(code);
       container.innerHTML = svg;
-      
-      const svgElement = container.querySelector('svg');
+
+      const svgElement = container.querySelector("svg");
 
       if (svgElement) {
-        svgElement.style.width = '100%';
-        svgElement.style.height = 'auto';
-        svgElement.style.display = 'block';
+        svgElement.style.width = "100%";
+        svgElement.style.height = "auto";
+        svgElement.style.display = "block";
       }
     } catch (err) {
       console.error("Render error:", err);
+      container.innerHTML = `
+        <div style="color: #ff4d4d; padding: 20px; font-family: monospace; background: rgba(255,0,0,0.05); border-radius: 8px;">
+          <strong>⚠️ Render Error:</strong><br/>
+          ${err.message}
+        </div>`;
     }
   }
 
@@ -51,6 +63,8 @@ export function initEditor() {
 
   window.downloadSVG = () => {
     const svgData = container.innerHTML;
+    if (!svgData.includes("<svg")) return;
+
     const blob = new Blob([svgData], { type: "image/svg+xml" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -62,12 +76,15 @@ export function initEditor() {
 
   window.downloadPNG = () => {
     const element = document.getElementById("diagram");
-    html2canvas(element, { 
-      backgroundColor: "#ffffff", 
+    if (!element.innerHTML.includes("<svg")) return;
+
+    html2canvas(element, {
+      backgroundColor: "#ffffff",
       scale: 2,
       scrollX: 0,
-      scrollY: 0
-    }).then(canvas => {
+      scrollY: 0,
+      useCORS: true,
+    }).then((canvas) => {
       const link = document.createElement("a");
       link.download = "diagram.png";
       link.href = canvas.toDataURL("image/png");
