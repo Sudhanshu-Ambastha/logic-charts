@@ -1,233 +1,234 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<head>
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <title>Logic-Charts | Modular Diagram Engine</title>
+
+    <script
+      defer
+      src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+    ></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=JetBrains+Mono:wght@400;500&display=swap');
-    
-        :root {
-            --bg-base: #02040a;
-            --glass-panel: rgba(13, 17, 23, 0.7);
-            --accent-primary: #00d2ff;
-            --accent-secondary: #3a7bd5;
-            --glow: rgba(0, 210, 255, 0.3);
-            --text-vibrant: #f0f6fc;
-            --text-dim: #8b949e;
-            --border-subtle: rgba(255, 255, 255, 0.08);
-            --border-bright: rgba(0, 210, 255, 0.4);
-        }
-    
-        body {
-            display: flex;
-            height: 100vh;
-            margin: 0;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--bg-base);
-            color: var(--text-vibrant);
-            overflow: hidden;
-        }
-    
-        /* --- Sidebar: Hyper-Glass Effect --- */
-    
-        #editor {
-            width: 380px;
-            min-width: 380px;
-            padding: 40px 28px;
-            display: flex;
-            flex-direction: column;
-            background: var(--glass-panel);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border-right: 1px solid var(--border-subtle);
-            box-shadow: 20px 0 50px rgba(0, 0, 0, 0.5);
-            z-index: 10;
-        }
-    
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 40px;
-        }
-    
-        .brand-icon {
-            width: 42px;
-            height: 42px;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 20px var(--glow);
-        }
-    
-        .brand h3 {
-            margin: 0;
-            font-size: 1.25rem;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            background: linear-gradient(to right, #fff, #8b949e);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-    
-        /* --- Editor Area --- */
-    
-        .editor-wrapper {
-            flex: 1;
-            position: relative;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 20px;
-            padding: 2px;
-            /* For the gradient border effect */
-            background: linear-gradient(135deg, var(--border-subtle), transparent);
-        }
-    
-        textarea {
-            width: 100%;
-            height: 100%;
-            background: #0d1117;
-            border: none;
-            border-radius: 18px;
-            color: #adbac7;
-            padding: 24px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 14px;
-            line-height: 1.8;
-            resize: none;
-            outline: none;
-            box-sizing: border-box;
-            box-shadow: inset 0 10px 30px rgba(0, 0, 0, 0.4);
-        }
-    
-        textarea:focus {
-            box-shadow: inset 0 0 0 1px var(--border-bright), 0 0 30px var(--glow);
-        }
-    
-        /* --- Floating Action Buttons --- */
-    
-        .controls {
-            margin-top: 24px;
-            display: flex;
-            gap: 12px;
-        }
-    
-        button {
-            flex: 1;
-            padding: 14px;
-            border-radius: 14px;
-            border: 1px solid var(--border-subtle);
-            background: rgba(255, 255, 255, 0.03);
-            color: var(--text-vibrant);
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(5px);
-        }
-    
-        button:hover {
-            background: var(--text-vibrant);
-            color: var(--bg-base);
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-        }
-    
-        /* --- Viewer: The Infinite Canvas --- */
-    
-        #viewer {
-            flex-grow: 1;
-            position: relative;
-            background-color: var(--bg-base);
-            /* Double Grid System */
-            background-image:
-                linear-gradient(rgba(56, 189, 248, 0.03) 1.5px, transparent 1.5px),
-                linear-gradient(90deg, rgba(56, 189, 248, 0.03) 1.5px, transparent 1.5px),
-                linear-gradient(rgba(56, 189, 248, 0.01) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(56, 189, 248, 0.01) 1px, transparent 1px);
-            background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: auto;
-        }
-    
-        #diagram {
-            padding: 60px;
-            background: #ffffff;
-            border-radius: 2px;
-            /* Sharp technical look */
-            box-shadow:
-                0 0 0 1px rgba(255, 255, 255, 0.1),
-                0 30px 60px rgba(0, 0, 0, 0.6);
-            position: relative;
-        }
-    
-        /* Decorative "Technical" Corner Marks */
-    
-        #diagram::before {
-            content: '';
-            position: absolute;
-            top: -10px;
-            left: -10px;
-            width: 20px;
-            height: 20px;
-            border-top: 2px solid var(--accent-primary);
-            border-left: 2px solid var(--accent-primary);
-        }
-    
-        #diagram::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            right: -10px;
-            width: 20px;
-            height: 20px;
-            border-bottom: 2px solid var(--accent-primary);
-            border-right: 2px solid var(--accent-primary);
-        }
-    
-        svg {
-            display: block;
-            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-        }
-    
-        /* Scrollbar Styling */
-    
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-    
-        ::-webkit-scrollbar-thumb {
-            background: var(--border-subtle);
-            border-radius: 10px;
-        }
+      @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=JetBrains+Mono:wght@400;500&display=swap");
+
+      :root {
+        --bg-base: #02040a;
+        --glass-panel: rgba(13, 17, 23, 0.7);
+        --accent-primary: #00d2ff;
+        --accent-secondary: #3a7bd5;
+        --glow: rgba(0, 210, 255, 0.3);
+        --text-vibrant: #f0f6fc;
+        --text-dim: #8b949e;
+        --border-subtle: rgba(255, 255, 255, 0.08);
+        --border-bright: rgba(0, 210, 255, 0.4);
+      }
+
+      body {
+        display: flex;
+        height: 100vh;
+        margin: 0;
+        font-family: "Plus Jakarta Sans", sans-serif;
+        background-color: var(--bg-base);
+        color: var(--text-vibrant);
+        overflow: hidden;
+      }
+
+      #editor {
+        width: 380px;
+        min-width: 380px;
+        padding: 40px 28px;
+        display: flex;
+        flex-direction: column;
+        background: var(--glass-panel);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        backdrop-filter: blur(20px) saturate(180%);
+        border-right: 1px solid var(--border-subtle);
+        box-shadow: 20px 0 50px rgba(0, 0, 0, 0.5);
+        z-index: 10;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 40px;
+      }
+
+      .brand h3 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        background: linear-gradient(to right, #fff, #8b949e);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .editor-wrapper {
+        flex: 1;
+        position: relative;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 20px;
+        padding: 2px;
+        background: linear-gradient(135deg, var(--border-subtle), transparent);
+      }
+
+      textarea {
+        width: 100%;
+        height: 100%;
+        background: #0d1117;
+        border: none;
+        border-radius: 18px;
+        color: #adbac7;
+        padding: 24px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 14px;
+        line-height: 1.8;
+        resize: none;
+        outline: none;
+        box-sizing: border-box;
+        box-shadow: inset 0 10px 30px rgba(0, 0, 0, 0.4);
+      }
+
+      textarea:focus {
+        box-shadow:
+          inset 0 0 0 1px var(--border-bright),
+          0 0 30px var(--glow);
+      }
+
+      .controls {
+        margin-top: 24px;
+        display: flex;
+        gap: 12px;
+      }
+
+      button {
+        flex: 1;
+        padding: 14px;
+        border-radius: 14px;
+        border: 1px solid var(--border-subtle);
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--text-vibrant);
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        -webkit-backdrop-filter: blur(5px);
+        backdrop-filter: blur(5px);
+      }
+
+      button:hover {
+        background: var(--text-vibrant);
+        color: var(--bg-base);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+      }
+
+      #viewer {
+        flex-grow: 1;
+        position: relative;
+        background-color: var(--bg-base);
+        background-image:
+          linear-gradient(rgba(56, 189, 248, 0.03) 1.5px, transparent 1.5px),
+          linear-gradient(
+            90deg,
+            rgba(56, 189, 248, 0.03) 1.5px,
+            transparent 1.5px
+          ),
+          linear-gradient(rgba(56, 189, 248, 0.01) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(56, 189, 248, 0.01) 1px, transparent 1px);
+        background-size:
+          100px 100px,
+          100px 100px,
+          20px 20px,
+          20px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: auto;
+      }
+
+      #diagram {
+        padding: 60px;
+        background: #ffffff;
+        border-radius: 2px;
+        box-shadow:
+          0 0 0 1px rgba(255, 255, 255, 0.1),
+          0 30px 60px rgba(0, 0, 0, 0.6);
+        position: relative;
+      }
+
+      #diagram::before {
+        content: "";
+        position: absolute;
+        top: -10px;
+        left: -10px;
+        width: 20px;
+        height: 20px;
+        border-top: 2px solid var(--accent-primary);
+        border-left: 2px solid var(--accent-primary);
+      }
+
+      #diagram::after {
+        content: "";
+        position: absolute;
+        bottom: -10px;
+        right: -10px;
+        width: 20px;
+        height: 20px;
+        border-bottom: 2px solid var(--accent-primary);
+        border-right: 2px solid var(--accent-primary);
+      }
+
+      svg {
+        display: block;
+        transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+      }
+
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: var(--border-subtle);
+        border-radius: 10px;
+      }
     </style>
-  <script type="module" crossorigin src="/logic-charts/assets/index-DnRqyQyu.js"></script>
-</head>
+    <script type="module" crossorigin src="/logic-charts/assets/index-DDhjrTie.js"></script>
+  </head>
 
-<body>
-
+  <body>
     <div id="editor">
+      <div class="brand">
+        <h3>Logic-Charts</h3>
+      </div>
 
-        <h3>Code</h3>
+      <textarea
+        id="codeInput"
+        title="Diagram Code Editor"
+        aria-label="Enter your diagram code here"
+        placeholder="Enter your pert, cpm, or useCase code..."
+      >
+pert
+activity: 1-2, 2-3, 2-4, 3-5, 4-5
+optimistic: 2, 5, 1, 8, 3
+likely: 4, 7, 2, 10, 4
+pessimistic: 6, 9, 3, 12, 5
+      </textarea>
 
-        <textarea id="codeInput">
-cpm
-activity: A, B, C, D, E, F, G
-predecessor: _, _, A, A;B, D, C;E, E
-duration: 7, 9, 12, 8, 9, 6, 5
-        </textarea>
-
-        <div class="controls">
-            <button onclick="downloadSVG()">Download SVG</button>
-            <button onclick="downloadPNG()">Download PNG</button>
-        </div>
+      <div class="controls">
+        <button onclick="downloadSVG()">Download SVG</button>
+        <button onclick="downloadPNG()">Download PNG</button>
+      </div>
     </div>
-    <div id="viewer">
-        <div id="diagram"></div>
+
+    <div id="viewer" role="region" aria-label="Diagram Viewer">
+      <div id="diagram"></div>
     </div>
-</body>
+
+  </body>
 </html>
