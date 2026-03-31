@@ -11,14 +11,15 @@ export function initEditor() {
 
   async function render() {
     const code = input.value.trim();
-    const isUseCase = code.startsWith("useCase") || code.startsWith("usecase");
+    const isUseCase = code.toLowerCase().startsWith("usecase");
     const isCPM = code.startsWith("cpm");
+    const isPERT = code.startsWith("pert");
 
-    if (!isUseCase && !isCPM) {
+    if (!isUseCase && !isCPM && !isPERT) {
       container.innerHTML = `
         <div style='color: #8b949e; font-family: "Plus Jakarta Sans", sans-serif; padding: 40px; text-align: center;'>
           <p style='font-weight: 800; font-size: 1.2rem; margin-bottom: 8px;'>🏗️ Sovereign Architect Editor</p>
-          <p style='font-size: 0.9em; opacity: 0.7;'>Waiting for valid input (Start with <code>useCase</code> or <code>cpm</code>)...</p>
+          <p style='font-size: 0.9em; opacity: 0.7;'>Waiting for valid input (Start with <code>useCase</code>, <code>cpm</code>, or <code>pert</code>)...</p>
         </div>`;
       return;
     }

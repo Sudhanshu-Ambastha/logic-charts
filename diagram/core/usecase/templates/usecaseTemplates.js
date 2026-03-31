@@ -1,4 +1,4 @@
-import { wrapText } from "../utils/textWrap";
+import { wrapText } from "../../../utils/textWrap";
 
 export const templates = {
   actor(x, y, label) {
@@ -54,10 +54,10 @@ export const templates = {
   },
 
   externalSystem(x, y, label) {
-  const lines = wrapText(label, 140);
-  const boxHeight = 40 + (lines.length - 1) * 15;
+    const lines = wrapText(label, 140);
+    const boxHeight = 40 + (lines.length - 1) * 15;
 
-  return `
+    return `
   <g class="external-system">
     <rect x="${x}" y="${y}" width="160" height="${boxHeight}" fill="#61c1ed" stroke="black"/>
     ${lines.map((line, i) => `<text x="${x + 80}" y="${y + 20 + i * 15}" text-anchor="middle" font-size="12" font-family="Helvetica" font-weight="bold">${line}</text>`).join("")}
@@ -67,15 +67,22 @@ export const templates = {
 
   connector(x1, y1, x2, y2, type, fromId, toId, model) {
     const isRel = type === "include" || type === "extend";
-    const isDashed = isRel || type === "dependency" || type === "realization" || type === "anchor";
+    const isDashed =
+      isRel ||
+      type === "dependency" ||
+      type === "realization" ||
+      type === "anchor";
     const isDotted = type === "constraint";
-    
+
     if (type === "anchor") {
-      const isFromValid = model.notes[fromId] || model.externalSystems?.[fromId];
+      const isFromValid =
+        model.notes[fromId] || model.externalSystems?.[fromId];
       const isToValid = model.notes[toId] || model.externalSystems?.[toId];
       if (!isFromValid && !isToValid) {
-         console.error("Anchor connection only allowed between System/External System and Notes");
-         return ""; 
+        console.error(
+          "Anchor connection only allowed between System/External System and Notes",
+        );
+        return "";
       }
     }
 
@@ -83,54 +90,68 @@ export const templates = {
       const isSystem = model.systemBoundary?.id === fromId;
       const isToOvalOrNote = model.usecases[toId] || model.notes[toId];
       if (!isSystem || !isToOvalOrNote) {
-        console.error("Containment only allowed from System Boundary to UseCase or Note");
+        console.error(
+          "Containment only allowed from System Boundary to UseCase or Note",
+        );
         return "";
       }
     }
 
-    let markerId = "none"; 
+    let markerId = "none";
     if (isRel || type === "dependency") markerId = "arrow-open";
-    if (type === "generalization" || type === "realization") markerId = "arrow-hollow";
+    if (type === "generalization" || type === "realization")
+      markerId = "arrow-hollow";
     if (type === "containment") markerId = "arrow-diamond";
 
     let d;
     let labelX, labelY;
 
-    const needsCurve = isRel || ["dependency", "realization", "generalization", "containment", "constraint"].includes(type);
+    const needsCurve =
+      isRel ||
+      [
+        "dependency",
+        "realization",
+        "generalization",
+        "containment",
+        "constraint",
+      ].includes(type);
 
     if (needsCurve) {
-        const startX = x1 + 70;
-        const endX = x2 + 70;
-        const ctrlX = Math.max(startX, endX) + 60;
-        const ctrlY = (y1 + y2) / 2;
-        d = `M ${startX} ${y1} Q ${ctrlX} ${ctrlY} ${endX} ${y2}`;
-        labelX = Math.max(startX, endX) + 40;
-        labelY = (y1 + y2) / 2;
+      const startX = x1 + 70;
+      const endX = x2 + 70;
+      const ctrlX = Math.max(startX, endX) + 60;
+      const ctrlY = (y1 + y2) / 2;
+      d = `M ${startX} ${y1} Q ${ctrlX} ${ctrlY} ${endX} ${y2}`;
+      labelX = Math.max(startX, endX) + 40;
+      labelY = (y1 + y2) / 2;
     } else {
-        let startX = x1;
-        let endX = x2;
-        if (x1 < x2) {
-            startX = x1; 
-            endX = x2 - 70; 
-        } else {
-            startX = x1; 
-            endX = x2 + 70;
-        }
-        d = `M ${startX} ${y1} L ${endX} ${y2}`;
+      let startX = x1;
+      let endX = x2;
+      if (x1 < x2) {
+        startX = x1;
+        endX = x2 - 70;
+      } else {
+        startX = x1;
+        endX = x2 + 70;
+      }
+      d = `M ${startX} ${y1} L ${endX} ${y2}`;
     }
 
     let strokeDash = "";
     if (isDashed) strokeDash = 'stroke-dasharray="5,5"';
     if (isDotted) strokeDash = 'stroke-dasharray="2,2"';
-    const showLabel = isRel; 
+    const showLabel = isRel;
 
     return `
       <g class="connector" data-type="${type}">
         <path d="${d}" stroke="black" stroke-width="1.2" fill="none" ${strokeDash} marker-end="url(#${markerId})"/>
-        ${showLabel ? `
+        ${
+          showLabel
+            ? `
           <text x="${labelX}" y="${labelY}" text-anchor="start" font-size="10" font-family="Helvetica" font-style="italic" fill="#000" font-weight="bold">
             «${type}»
-          </text>` : ""
+          </text>`
+            : ""
         }
       </g>
     `;

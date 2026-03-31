@@ -1,9 +1,10 @@
-import { templates } from "../templates/svgTemplates.js";
+import { templates } from "./templates/usecaseTemplates.js";
 
 export function renderSVG(model, layoutData) {
-  const { positions, width, height, systemHeight, systemTop, boundaryWidth } = layoutData;
+  const { positions, width, height, systemHeight, systemTop, boundaryWidth } =
+    layoutData;
   const centerX = width / 2;
-  const boundaryX = centerX - (boundaryWidth / 2);
+  const boundaryX = centerX - boundaryWidth / 2;
   const boundaryY = systemTop;
 
   let boundary = "";
@@ -11,23 +12,41 @@ export function renderSVG(model, layoutData) {
   let nodes = "";
 
   if (model.system) {
-    boundary += templates.systemBoundary(boundaryX, boundaryY, boundaryWidth, systemHeight, model.system);
+    boundary += templates.systemBoundary(
+      boundaryX,
+      boundaryY,
+      boundaryWidth,
+      systemHeight,
+      model.system,
+    );
   }
 
   model.connections.forEach((conn) => {
     const p1 = positions[conn.from];
     const p2 = positions[conn.to];
     if (!p1 || !p2) return;
-    connectors += templates.connector(p1.x, p1.y, p2.x, p2.y, conn.type, conn.from, conn.to, model);
+    connectors += templates.connector(
+      p1.x,
+      p1.y,
+      p2.x,
+      p2.y,
+      conn.type,
+      conn.from,
+      conn.to,
+      model,
+    );
   });
 
   const renderCollection = (collection, type) => {
-    Object.keys(collection).forEach(id => {
+    Object.keys(collection).forEach((id) => {
       const p = positions[id];
       if (!p) return;
-      if (type === "usecase") nodes += templates.useCase(p.x, p.y, collection[id]);
-      else if (type === "external") nodes += templates.externalSystem(p.x, p.y, collection[id]);
-      else if (type === "actor") nodes += templates.actor(p.x, p.y, collection[id]);
+      if (type === "usecase")
+        nodes += templates.useCase(p.x, p.y, collection[id]);
+      else if (type === "external")
+        nodes += templates.externalSystem(p.x, p.y, collection[id]);
+      else if (type === "actor")
+        nodes += templates.actor(p.x, p.y, collection[id]);
     });
   };
 
