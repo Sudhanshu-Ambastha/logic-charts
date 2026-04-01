@@ -1,6 +1,6 @@
 # 🏗️ Logic-Charts: Modular Diagram Engine
 
-A lightweight, modular SVG rendering engine designed to create professional-grade **UML Use Case**, **CPM (Critical Path Method)**, and **PERT (Program Evaluation Review Technique)** diagrams. This toolkit prioritizes outcome-oriented pragmatism, providing a "one-man army" solution for technical visualization.
+A lightweight, modular SVG rendering engine designed to create professional-grade **UML Use Case**, **CPM (Critical Path Method)**, and **PERT (Program Evaluation Review Technique)** diagrams. This toolkit prioritizes outcome-oriented pragmatism, providing a solution for technical visualization.
 
 ---
 
