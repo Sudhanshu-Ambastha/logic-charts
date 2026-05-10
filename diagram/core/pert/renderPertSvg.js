@@ -8,21 +8,23 @@ export function renderPertSvg(model, layoutData) {
   let eventGroup = "";
 
   model.activities.forEach((act) => {
-    const start = positions[act.from];
-    const end = positions[act.to];
-    if (!start || !end) return;
+    const startNode = model.events[act.from];
+    const endNode = model.events[act.to];
+    const startPos = positions[act.from];
+    const endPos = positions[act.to];
 
-    const angle = Math.atan2(end.y - start.y, end.x - start.x);
-    const x1 = start.x + radius * Math.cos(angle);
-    const y1 = start.y + radius * Math.sin(angle);
-    const x2 = end.x - radius * Math.cos(angle);
-    const y2 = end.y - radius * Math.sin(angle);
+    if (!startPos || !endPos) return;
 
     const isCritical =
-      Math.abs(model.events[act.from].e + act.te - model.events[act.to].e) <
-        0.1 &&
-      Math.abs(model.events[act.from].l + act.te - model.events[act.to].l) <
-        0.1;
+      Math.abs(startNode.e - startNode.l) < 0.1 &&
+      Math.abs(endNode.e - endNode.l) < 0.1 &&
+      Math.abs(startNode.e + act.te - endNode.e) < 0.1;
+
+    const angle = Math.atan2(endPos.y - startPos.y, endPos.x - startPos.x);
+    const x1 = startPos.x + radius * Math.cos(angle);
+    const y1 = startPos.y + radius * Math.sin(angle);
+    const x2 = endPos.x - radius * Math.cos(angle);
+    const y2 = endPos.y - radius * Math.sin(angle);
 
     connectors += pertTemplates.activity(
       x1,
@@ -32,7 +34,7 @@ export function renderPertSvg(model, layoutData) {
       act.te,
       isCritical,
       (x1 + x2) / 2,
-      (y1 + y2) / 2 - 10,
+      (y1 + y2) / 2 - 12,
     );
   });
 
