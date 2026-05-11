@@ -1,7 +1,3 @@
-/**
- * CPMDb: The Math Engine for Critical Path Method
- * Handles Forward Pass, Backward Pass, and Slack calculation.
- */
 export class CPMDb {
   constructor() {
     this.activities = {};
@@ -22,54 +18,65 @@ export class CPMDb {
     };
   }
 
-  /**
-   * Sorts nodes so parents always come before children.
-   * Prevents NaN errors during Forward/Backward passes.
-   */
   getSortedNodes() {
     const nodes = Object.values(this.activities);
     const sorted = [];
     const visited = new Set();
+    const permanent = new Set();
 
     const visit = (id) => {
-      if (visited.has(id)) return;
+      if (permanent.has(id)) return;
+      if (visited.has(id)) {
+        throw new Error(`Cycle detected at activity: ${id}`);
+      }
+
       const node = this.activities[id];
       if (!node) return;
-      node.predecessors.forEach((p) => visit(p));
+
       visited.add(id);
+
+      node.predecessors.forEach((p) => {
+        visit(p);
+      });
+
+      visited.delete(id);
+      permanent.add(id);
       sorted.push(node);
     };
 
-    nodes.forEach((n) => visit(n.id));
+    nodes.forEach((n) => {
+      if (!permanent.has(n.id)) visit(n.id);
+    });
+
     return sorted;
   }
 
   calculate() {
     const nodes = this.getSortedNodes();
 
-    // 1. Build Successors map
+    Object.values(this.activities).forEach((n) => (n.successors = []));
+
     nodes.forEach((node) => {
-      node.successors = []; // Reset to avoid duplicates on re-render
       node.predecessors.forEach((predId) => {
         if (this.activities[predId]) {
-          this.activities[predId].successors.push(node.id);
+          if (!this.activities[predId].successors.includes(node.id)) {
+            this.activities[predId].successors.push(node.id);
+          }
         }
       });
     });
 
-    // 2. Forward Pass (Early Start / Early Finish)
     nodes.forEach((node) => {
       if (node.predecessors.length === 0) {
         node.es = 0;
       } else {
         node.es = Math.max(
-          ...node.predecessors.map((p) => this.activities[p]?.ef || 0),
+          ...node.predecessors.map((p) => this.activities[p]?.ef || 0)
         );
       }
       node.ef = node.es + node.duration;
     });
 
-    // 3. Backward Pass (Late Start / Late Finish)
     const projectFinishTime =
       nodes.length > 0 ? Math.max(...nodes.map((n) => n.ef)) : 0;
 
@@ -79,20 +86,17 @@ export class CPMDb {
       } else {
         node.lf = Math.min(
           ...node.successors.map(
-            (s) => this.activities[s]?.ls || projectFinishTime,
-          ),
+            (s) => this.activities[s]?.ls ?? projectFinishTime
+          )
         );
       }
       node.ls = node.lf - node.duration;
       node.slack = node.lf - node.ef;
-      node.isCritical = Math.abs(node.slack) < 0.001; // Handle floating point precision
+      node.isCritical = Math.abs(node.slack) < 0.001;
     });
   }
 }
 
-/**
- * Parser for the CPM DSL syntax
- */
 export function parseCPM(code) {
   const db = new CPMDb();
   const lines = code
