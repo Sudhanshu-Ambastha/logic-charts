@@ -1,4 +1,4 @@
-import { cpmTemplates } from "./cpmTemplates.js";
+import { cpmTemplates } from "./templates/cpmTemplates.js";
 
 export function renderCPMSVG(model, layoutData) {
   const { positions, width, height } = layoutData;
