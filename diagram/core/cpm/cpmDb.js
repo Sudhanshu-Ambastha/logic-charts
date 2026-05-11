@@ -53,7 +53,6 @@ export class CPMDb {
 
   calculate() {
     const nodes = this.getSortedNodes();
-
     Object.values(this.activities).forEach((n) => (n.successors = []));
 
     nodes.forEach((node) => {
