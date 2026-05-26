@@ -67,6 +67,14 @@ without modifying the core system.
 
 ---
 
+## 🎨 Ambastha Diagrams: The Recommended Tool
+If you want to use this engine with a professional-grade editor experience, I highly recommend using [Ambastha Diagrams](https://marketplace.visualstudio.com/items?itemName=SudhanshuAmbastha.ambastha-diagrams).
+It is the official VS Code extension for the `logic-charts engine`, offering:
+- **Real-time Preview:** See your diagram update as you type.
+- **Syntax Highlighting:** Full support for `.abd` file extensions.
+- **Streamlined Workflow:** Designed to work seamlessly in VS Code and `vscode.dev` for a distraction-free diagramming experience.
+[Get the Extension on the VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=SudhanshuAmbastha.ambastha-diagrams)
+
 ## 🚀 Quick Start
 
 To get the project running locally, make sure **Node.js** is installed on your system, then run the following commands in your terminal.
